@@ -30,11 +30,17 @@
   .mono{ font-family:'JetBrains Mono',monospace; }
   a:focus-visible{ outline:2px solid var(--primary); outline-offset:3px; }
 
+  #particles{
+    position:fixed; inset:0; z-index:0;
+    pointer-events:none;
+  }
+
   .ambient{
     position:fixed; inset:0; z-index:0; pointer-events:none;
     background:
-      radial-gradient(ellipse 800px 500px at 50% -10%, rgba(124,92,255,.15), transparent 60%),
-      radial-gradient(ellipse 500px 400px at 90% 40%, rgba(255,107,74,.07), transparent 60%);
+      radial-gradient(ellipse 900px 600px at 50% -5%, rgba(124,92,255,.22), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 90% 20%, rgba(255,107,74,.1), transparent 60%),
+      radial-gradient(ellipse 500px 500px at 5% 80%, rgba(111,212,255,.06), transparent 60%);
   }
 
   nav{
@@ -226,7 +232,7 @@
   }
   .btn-ghost:hover{ border-color:var(--primary); background:var(--primary-soft); }
 
-  footer{ text-align:center; padding:30px 20px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); }
+  footer{ text-align:center; padding:30px 20px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); position:relative; z-index:1; }
 
   @media (max-width:760px){
     .story-grid{ grid-template-columns:1fr; }
@@ -237,6 +243,7 @@
 </head>
 <body>
 
+<canvas id="particles"></canvas>
 <div class="ambient"></div>
 
 <nav>
@@ -247,7 +254,7 @@
 <header>
   <span class="eyebrow"><span class="dot"></span>About us</span>
   <h1>We build websites that<br><span>orbit your growth</span></h1>
-  <p class="lead">BrandOrbitX is a passionate web design team dedicated to crafting fast, modern, and conversion-ready websites for businesses of every size — from local shops to full-scale platforms.</p>
+  <p class="lead">BrandOrbitX is a passionate web design team dedicated to crafting fast, modern, and conversion-ready websites for businesses of every size — from local shops to full-scale platform[...]
 </header>
 
 <!-- Story -->
@@ -256,8 +263,8 @@
     <div class="story-text">
       <span class="eyebrow"><span class="dot"></span>Our story</span>
       <h2>Born from a love of design and a drive to help businesses grow</h2>
-      <p>BrandOrbitX started with a simple idea — every business deserves a professional online presence, not just the big ones. We saw too many small businesses struggling with outdated or overpriced websites, so we built a studio that delivers premium quality at honest prices.</p>
-      <p>Today our team handles everything from simple 5-page business sites to complex e-commerce platforms, booking systems, and custom dashboards — all built with the same care and attention to detail.</p>
+      <p>BrandOrbitX started with a simple idea — every business deserves a professional online presence, not just the big ones. We saw too many small businesses struggling with outdated or overpric[...]
+      <p>Today our team handles everything from simple 5-page business sites to complex e-commerce platforms, booking systems, and custom dashboards — all built with the same care and attention to d[...]
     </div>
     <div class="story-visual">
       <div class="story-stat"><div class="n mono">50+</div><div class="l">Projects delivered</div></div>
@@ -273,7 +280,7 @@
   <div class="mission-wrap">
     <span class="eyebrow" style="margin-bottom:18px;"><span class="dot"></span>Our mission</span>
     <h2>Make premium web design accessible to every business</h2>
-    <p>We believe a great website should not be a luxury. Our mission is to deliver modern, fast, mobile-first websites at prices that actually make sense — so any business can compete online, regardless of size or budget.</p>
+    <p>We believe a great website should not be a luxury. Our mission is to deliver modern, fast, mobile-first websites at prices that actually make sense — so any business can compete online, regar[...]
   </div>
 </div>
 
@@ -366,6 +373,44 @@
 </div>
 
 <footer><p>© 2026 BrandOrbitX | All Rights Reserved</p></footer>
+
+<script>
+  // PARTICLES
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  class Particle{
+    constructor(){
+      this.x = Math.random()*W; this.y = Math.random()*H;
+      this.size = Math.random()*1.5+0.3;
+      this.vx = (Math.random()-.5)*.3; this.vy = (Math.random()-.5)*.3;
+      this.alpha = Math.random()*.6+.1;
+      const c = ['rgba(124,92,255,','rgba(111,212,255,','rgba(255,107,74,','rgba(232,234,242,'];
+      this.color = c[Math.floor(Math.random()*c.length)];
+    }
+    draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color+this.alpha+')'; ctx.fill(); }
+    update(){
+      this.x+=this.vx; this.y+=this.vy;
+      if(this.x<0||this.x>W) this.vx*=-1;
+      if(this.y<0||this.y>H) this.vy*=-1;
+    }
+  }
+  for(let i=0;i<90;i++) particles.push(new Particle());
+  function drawLines(){
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){ ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle=`rgba(124,92,255,${.08*(1-d/120)})`; ctx.lineWidth=.5; ctx.stroke(); }
+      }
+    }
+  }
+  function animate(){ ctx.clearRect(0,0,W,H); particles.forEach(p=>{p.update();p.draw();}); drawLines(); requestAnimationFrame(animate); }
+  animate();
+</script>
 
 </body>
 </html>
