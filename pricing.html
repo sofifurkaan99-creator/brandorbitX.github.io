@@ -30,11 +30,17 @@
   .mono{ font-family:'JetBrains Mono',monospace; }
   a:focus-visible, button:focus-visible{ outline:2px solid var(--primary); outline-offset:3px; }
 
+  #particles{
+    position:fixed; inset:0; z-index:0;
+    pointer-events:none;
+  }
+
   .ambient{
     position:fixed; inset:0; z-index:0; pointer-events:none;
     background:
-      radial-gradient(ellipse 800px 500px at 50% -10%, rgba(124,92,255,.16), transparent 60%),
-      radial-gradient(ellipse 600px 400px at 90% 30%, rgba(255,107,74,.07), transparent 60%);
+      radial-gradient(ellipse 900px 600px at 50% -5%, rgba(124,92,255,.22), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 90% 20%, rgba(255,107,74,.1), transparent 60%),
+      radial-gradient(ellipse 500px 500px at 5% 80%, rgba(111,212,255,.06), transparent 60%);
   }
 
   nav{
@@ -55,6 +61,7 @@
     text-align:center;
     padding:70px 6% 50px;
     overflow:hidden;
+    z-index:1;
   }
   .eyebrow{
     display:inline-flex; align-items:center; gap:8px;
@@ -182,6 +189,7 @@
   /* note strip */
   .note-strip{
     max-width:1180px; margin:0 auto 80px; padding:0 6%;
+    position:relative; z-index:1;
   }
   .note-card{
     display:flex; align-items:center; gap:16px;
@@ -195,7 +203,7 @@
   }
   .note-card i{ color:var(--accent); font-size:1.3rem; flex-shrink:0; }
 
-  footer{ text-align:center; padding:30px 20px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); }
+  footer{ text-align:center; padding:30px 20px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); position:relative; z-index:1; }
 
   @media (max-width:760px){
     .pricing-grid{ grid-template-columns:1fr; }
@@ -204,6 +212,7 @@
 </head>
 <body>
 
+<canvas id="particles"></canvas>
 <div class="ambient"></div>
 
 <nav>
@@ -348,5 +357,42 @@
 
 <footer><p>© 2026 BrandOrbitX | All Rights Reserved</p></footer>
 
+<script>
+  // PARTICLES
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  class Particle{
+    constructor(){
+      this.x = Math.random()*W; this.y = Math.random()*H;
+      this.size = Math.random()*1.5+0.3;
+      this.vx = (Math.random()-.5)*.3; this.vy = (Math.random()-.5)*.3;
+      this.alpha = Math.random()*.6+.1;
+      const c = ['rgba(124,92,255,','rgba(111,212,255,','rgba(255,107,74,','rgba(232,234,242,'];
+      this.color = c[Math.floor(Math.random()*c.length)];
+    }
+    draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color+this.alpha+')'; ctx.fill(); }
+    update(){
+      this.x+=this.vx; this.y+=this.vy;
+      if(this.x<0||this.x>W) this.vx*=-1;
+      if(this.y<0||this.y>H) this.vy*=-1;
+    }
+  }
+  for(let i=0;i<90;i++) particles.push(new Particle());
+  function drawLines(){
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){ ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle=`rgba(124,92,255,${.08*(1-d/120)})`; ctx.lineWidth=.5; ctx.stroke(); }
+      }
+    }
+  }
+  function animate(){ ctx.clearRect(0,0,W,H); particles.forEach(p=>{p.update();p.draw();}); drawLines(); requestAnimationFrame(animate); }
+  animate();
+</script>
 </body>
 </html>
